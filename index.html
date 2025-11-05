@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>atRisk | Band Website</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;font-family:'Orbitron',Arial,sans-serif;scroll-behavior:smooth;}
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@700&display=swap');
+html,body{height:100%;overflow-x:hidden;background:#000;color:#fff;}
+canvas#cracks{position:fixed;top:0;left:0;width:100%;height:100%;z-index:0;pointer-events:none;background:#000;}
+
+/* === HEADER === */
+header{
+  position:fixed;top:0;left:0;width:100%;z-index:10000;
+  display:flex;justify-content:space-between;align-items:center;
+  padding:15px 30px;background:rgba(0,0,0,.85);border-bottom:1px solid rgba(255,255,255,.1);
+}
+.logo{
+  font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:700;
+  color:#fff;letter-spacing:2px;text-transform:uppercase;
+  text-shadow:0 0 10px #f00,0 0 25px #f00;
+  animation:glow 2s infinite alternate;
+}
+@keyframes glow{
+  from{text-shadow:0 0 5px #f00,0 0 15px #f00;}
+  to{text-shadow:0 0 20px #ff3333,0 0 35px #ff3333;}
+}
+.menu-toggle{
+  background:#f00;color:#fff;border:none;padding:8px 14px;
+  font-weight:bold;text-transform:uppercase;border-radius:4px;cursor:pointer;
+  box-shadow:0 0 10px rgba(255,0,0,.4);
+  transition:.3s;
+}
+.menu-toggle:hover{background:#fff;color:#000;}
+.nav{
+  position:fixed;top:0;right:-250px;width:250px;height:100vh;
+  background:rgba(10,10,10,.95);border-left:2px solid #f00;
+  box-shadow:-5px 0 20px rgba(255,0,0,.3);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:25px;transition:right .4s ease-in-out;z-index:9999;
+}
+.nav.show{right:0;}
+.nav a{
+  color:#fff;text-decoration:none;font-size:1.2rem;font-weight:bold;
+  text-transform:uppercase;letter-spacing:1px;transition:.3s;
+}
+.nav a:hover{color:#f00;transform:scale(1.1);}
+
+/* === SECTIONS === */
+section{position:relative;z-index:1;display:flex;justify-content:center;align-items:center;
+  height:100vh;padding:20px;}
+.card{
+  background:rgba(10,10,10,.7);border:1px solid rgba(255,255,255,.3);
+  border-radius:16px;box-shadow:0 0 25px rgba(255,255,255,.1);
+  width:70vw;max-width:900px;height:70vh;
+  display:flex;flex-direction:column;justify-content:center;align-items:center;
+  text-align:center;padding:30px;backdrop-filter:blur(3px);
+}
+h2{text-transform:uppercase;letter-spacing:2px;margin-bottom:15px;font-size:1.6rem;}
+p{color:#ddd;max-width:650px;line-height:1.6;margin-bottom:15px;}
+img.demo{width:80%;max-width:600px;border-radius:10px;margin-top:10px;}
+
+/* === PLAYER === */
+.shape-container{position:relative;width:230px;height:230px;margin-bottom:25px;display:flex;justify-content:center;align-items:center;}
+.shape-outline{
+  position:absolute;top:0;left:0;width:100%;height:100%;
+  border:3px solid #fff;border-radius:12px;
+  box-shadow:0 0 20px rgba(255,255,255,.3);
+  transition:all 1.2s ease-in-out;
+}
+.player-container{
+  position:relative;z-index:2;background:#111;border:1px solid #fff;border-radius:8px;
+  padding:10px;box-shadow:0 0 10px rgba(255,0,0,.3);
+  width:180px;text-align:center;
+}
+.track-title{font-size:.9rem;margin-bottom:8px;text-transform:uppercase;}
+.progress-bar{width:100%;height:5px;background:#333;border-radius:3px;overflow:hidden;margin:6px 0;}
+.progress{height:100%;width:0;background:#f00;transition:width .1s linear;}
+.controls{display:flex;justify-content:space-between;align-items:center;margin-top:6px;}
+.ctrl{background:#fff;color:#000;border:none;padding:4px 8px;border-radius:4px;font-weight:bold;cursor:pointer;transition:.3s;}
+.ctrl:hover{background:#ccc;}
+.time{font-size:.8rem;color:#bbb;}
+/* === FOOTER === */
+footer{
+  position:relative;z-index:2;background:rgba(0,0,0,.85);
+  text-align:center;padding:15px 10px;color:#ccc;
+  border-top:1px solid rgba(255,255,255,.2);
+  font-size:.9rem;
+}
+footer a{color:#f00;text-decoration:none;margin:0 6px;}
+footer a:hover{text-decoration:underline;}
+</style>
+</head>
+<body>
+<canvas id="cracks"></canvas>
+
+<header>
+  <div class="logo">atRisk</div>
+  <button class="menu-toggle" onclick="toggleMenu()">Menu</button>
+</header>
+
+<nav class="nav" id="navMenu">
+  <a href="#music" onclick="closeMenu()">Music</a>
+  <a href="#about" onclick="closeMenu()">About</a>
+  <a href="#tour" onclick="closeMenu()">Tour</a>
+  <a href="#blog" onclick="closeMenu()">Blog</a>
+</nav>
+
+<section id="music">
+  <div class="card">
+    <h2>Now Playing</h2>
+    <div class="shape-container">
+      <div class="shape-outline" id="outline"></div>
+      <div class="player-container">
+        <div class="track-title" id="trackTitle">Loading...</div>
+        <div class="progress-bar" id="progressBar"><div class="progress" id="progress"></div></div>
+        <div class="controls">
+          <button class="ctrl" onclick="prevTrack()">Prev</button>
+          <button class="ctrl" onclick="togglePlay()" id="playBtn">Play</button>
+          <button class="ctrl" onclick="nextTrack()">Next</button>
+        </div>
+        <div class="time"><span id="currentTime">0:00</span> / <span id="duration">0:00</span></div>
+        <audio id="audioPlayer"></audio>
+      </div>
+    </div>
+    <p>Industrial grit meets melodic honesty — sound that twists, morphs, and refuses to sit still.</p>
+  </div>
+</section>
+
+<section id="about">
+  <div class="card">
+    <h2>About The Band</h2>
+    <p>We’re four souls chasing one frequency. Inspired by 90s angst, modern production, and late-night drives.</p>
+    <img class="demo" src="https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?auto=format&fit=crop&w=900&q=60" alt="">
+  </div>
+</section>
+
+<section id="tour">
+  <div class="card">
+    <h2>Tour Dates</h2>
+    <ul style="list-style:none;margin-top:10px;">
+      <li>📍 Las Vegas NV — Jan 20</li>
+      <li>📍 Seattle WA — Feb 2</li>
+      <li>📍 Los Angeles CA — Feb 15</li>
+      <li>📍 Phoenix AZ — Mar 10</li>
+    </ul>
+    <img class="demo" src="https://images.unsplash.com/photo-1507874457470-272b3c8d8ee2?auto=format&fit=crop&w=900&q=60" alt="">
+  </div>
+</section>
+
+<section id="blog">
+  <div class="card">
+    <h2>Band Updates</h2>
+    <p>Recording Session 04 complete — new EP mix in progress. Merch drop this Friday! Follow our Instagram for teasers.</p>
+    <img class="demo" src="https://images.unsplash.com/photo-1518972559570-7cc1309f3229?auto=format&fit=crop&w=900&q=60" alt="">
+  </div>
+</section>
+
+<footer id="footer"></footer>
+
+<script>
+function toggleMenu(){document.getElementById("navMenu").classList.toggle("show");}
+function closeMenu(){document.getElementById("navMenu").classList.remove("show");}
+
+/* === AUDIO PLAYER === */
+const playlist=[
+ {title:"SoundHelix Song 1",src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3"},
+ {title:"SoundHelix Song 2",src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3"},
+ {title:"SoundHelix Song 3",src:"https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3"}
+];
+let currentTrack=0;
+const audio=document.getElementById("audioPlayer");
+const titleDisplay=document.getElementById("trackTitle");
+const playBtn=document.getElementById("playBtn");
+const progress=document.getElementById("progress");
+const progressBar=document.getElementById("progressBar");
+const currentTimeEl=document.getElementById("currentTime");
+const durationEl=document.getElementById("duration");
+function loadTrack(i){const t=playlist[i];audio.src=t.src;titleDisplay.textContent=t.title;playBtn.textContent="Play";}
+function nextTrack(){currentTrack=(currentTrack+1)%playlist.length;loadTrack(currentTrack);}
+function prevTrack(){currentTrack=(currentTrack-1+playlist.length)%playlist.length;loadTrack(currentTrack);}
+function togglePlay(){if(audio.paused){audio.play();playBtn.textContent="Pause";}else{audio.pause();playBtn.textContent="Play";}}
+audio.addEventListener("ended",nextTrack);
+audio.addEventListener("timeupdate",()=>{const p=(audio.currentTime/audio.duration)*100;
+progress.style.width=p+"%";currentTimeEl.textContent=formatTime(audio.currentTime);
+durationEl.textContent=formatTime(audio.duration);});
+progressBar.addEventListener("click",e=>{const w=progressBar.clientWidth;
+audio.currentTime=(e.offsetX/w)*audio.duration;});
+function formatTime(t){if(isNaN(t))return"0:00";const m=Math.floor(t/60),s=Math.floor(t%60);return`${m}:${s<10?"0"+s:s}`;}
+window.addEventListener("load",()=>loadTrack(currentTrack));
+
+/* === OUTLINE FX CYCLE === */
+const outline=document.getElementById("outline");
+const fx=[
+  {shadow:"0 0 25px rgba(255,0,0,.6)",border:"3px solid #f00"},
+  {shadow:"0 0 20px rgba(255,255,255,.7)",border:"3px dashed #fff"},
+  {shadow:"inset 0 0 15px rgba(255,0,0,.8),0 0 10px rgba(255,0,0,.8)",border:"2px double #f00"},
+  {shadow:"0 0 30px rgba(255,255,255,.9)",border:"3px groove #fff"},
+  {shadow:"0 0 35px rgba(255,0,0,.9)",border:"4px ridge #f00"}
+];
+let idx=0;
+setInterval(()=>{idx=(idx+1)%fx.length;
+outline.style.boxShadow=fx[idx].shadow;
+outline.style.border=fx[idx].border;},6000);
+
+/* === CRACKS BACKGROUND === */
+const canvas=document.getElementById("cracks"),ctx=canvas.getContext("2d");
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}resize();addEventListener("resize",resize);
+let cracks=[];
+function createCrack(x,y){const n=3+Math.random()*4;for(let j=0;j<n;j++){const a=Math.random()*Math.PI*2;
+cracks.push({x,y,vx:Math.cos(a)*2,vy:Math.sin(a)*2,life:0,max:80+Math.random()*100});}}
+function drawCracks(){ctx.globalCompositeOperation="lighter";ctx.lineCap="round";ctx.strokeStyle="rgba(255,0,0,.6)";ctx.beginPath();
+for(const c of cracks){ctx.moveTo(c.x,c.y);c.x+=c.vx;c.y+=c.vy;ctx.lineTo(c.x,c.y);
+if(Math.random()<.02){cracks.push({x:c.x,y:c.y,vx:-c.vy*.5+Math.random()-.5,vy:c.vx*.5+Math.random()-.5,life:0,max:c.max/2});}
+c.life++;}ctx.lineWidth=1;ctx.stroke();cracks=cracks.filter(c=>c.life<c.max);}
+function animate(){ctx.fillStyle="rgba(0,0,0,.2)";ctx.fillRect(0,0,canvas.width,canvas.height);
+if(Math.random()<.05)createCrack(Math.random()*canvas.width,Math.random()*canvas.height);
+drawCracks();requestAnimationFrame(animate);}animate();
+
+/* === ENCODED FOOTER === */
+const footer=document.getElementById("footer");
+const encoded="TWFkZSBieSA8YSBocmVmPSJodHRwczovL2tvemF0aHJpZnQuY29tIiB0YXJnZXQ9Il9ibGFuayI+S296YXRocmlmdC5jb208L2E+ICYgPGEgaHJlZj0iaHR0cHM6Ly9wY3JlY3ljbGluZ2NlbnRlci5jb20iIHRhcmdldD0iX2JsYW5rIj5QQ1JlY3ljbGluZ0NlbnRlci5jb208L2E+";
+footer.innerHTML=atob(encoded);
+</script>
+</body>
+</html>
